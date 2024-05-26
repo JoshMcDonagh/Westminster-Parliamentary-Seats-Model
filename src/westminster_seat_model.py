@@ -75,36 +75,3 @@ class WestminsterSeatModel:
                 overall_seat_predictions = overall_seat_predictions.add(seat_model_prediction)
 
         return pd.DataFrame(overall_seat_predictions)
-
-
-# Example usage (assuming this is added in your test or main script):
-if __name__ == "__main__":
-    # Create an instance of WestminsterSeatModel
-    westminster_model = WestminsterSeatModel()
-
-    # Set pandas display options to show all columns
-    pd.set_option("display.max_columns", None)
-    pd.set_option("display.width", 1000)
-
-    # Vote share data for prediction
-    single_vote_share = pd.DataFrame({
-        "Conservative": [22],
-        "Labour": [42],
-        "Scottish National Party": [3],
-        "Liberal Democrats": [9],
-        "Plaid Cymru": [1],
-        "Green Party": [6],
-        "UKIP/Brexit Party/Reform UK": [14],
-        "Other": [1]
-    })
-
-    # Predicted seats for each nation
-    predicted_seats = westminster_model.predict_seats(
-        number_of_english_seats=543,
-        number_of_scottish_seats=57,
-        number_of_welsh_seats=32,
-        vote_share_df=single_vote_share
-    )
-
-    # Print the seat predictions
-    print(predicted_seats)

@@ -17,11 +17,11 @@ class WestminsterSeatModel:
         """
         Initialize the WestminsterSeatModel with historical data for each nation.
         """
-        self._previous_vote_share_df = pd.read_csv('../data/british_vote_share_data.csv')
+        self._previous_vote_share_df = pd.read_csv("data/british_vote_share_data.csv")
         self._seat_models = {
-            "england": SeatModel(self._previous_vote_share_df, pd.read_csv('../data/english_seat_share_data.csv')),
-            "scotland": SeatModel(self._previous_vote_share_df, pd.read_csv('../data/scottish_seat_share_data.csv')),
-            "wales": SeatModel(self._previous_vote_share_df, pd.read_csv('../data/welsh_seat_share_data.csv'))
+            "england": SeatModel(self._previous_vote_share_df, pd.read_csv("data/english_seat_share_data.csv")),
+            "scotland": SeatModel(self._previous_vote_share_df, pd.read_csv("data/scottish_seat_share_data.csv")),
+            "wales": SeatModel(self._previous_vote_share_df, pd.read_csv("data/welsh_seat_share_data.csv"))
         }
 
         self._speakers_constituency_nation = "england"
@@ -83,25 +83,26 @@ if __name__ == "__main__":
     westminster_model = WestminsterSeatModel()
 
     # Set pandas display options to show all columns
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', 1000)
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", 1000)
 
     # Vote share data for prediction
     single_vote_share = pd.DataFrame({
-        'Conservative': [19.0],
-        'Labour': [45.0],
-        'Scottish National Party': [2.0],
-        'Liberal Democrats': [12.0],
-        'Plaid Cymru': [1.0],
-        'Green Party': [5.0],
-        'UKIP/Brexit Party/Reform UK': [14.0]
+        "Conservative": [43.6],
+        "Labour": [32.1],
+        "Scottish National Party": [3.9],
+        "Liberal Democrats": [11.6],
+        "Plaid Cymru": [0.5],
+        "Green Party": [2.61],
+        "UKIP/Brexit Party/Reform UK": [2.01],
+        "Other": [3.68]
     })
 
     # Predicted seats for each nation
     predicted_seats = westminster_model.predict_seats(
-        number_of_english_seats=533,
-        number_of_scottish_seats=59,
-        number_of_welsh_seats=40,
+        number_of_english_seats=543,
+        number_of_scottish_seats=57,
+        number_of_welsh_seats=32,
         vote_share_df=single_vote_share
     )
 

@@ -1,5 +1,7 @@
 import pandas as pd
+from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
 
 
 def fit_linear_regression(X, y):
@@ -16,6 +18,25 @@ def fit_linear_regression(X, y):
     model = LinearRegression()
     model.fit(X, y)
     return model
+
+
+def fit_polynomial_regression(X, y, degree=3):
+    """
+    Fit a polynomial regression model to the given data.
+
+    Parameters:
+    X (pd.DataFrame): The feature matrix (vote shares).
+    y (pd.Series): The target vector (seat shares).
+    degree (int): The degree of the polynomial.
+
+    Returns:
+    Pipeline: The fitted polynomial regression model.
+    """
+    polynomial_features = PolynomialFeatures(degree=degree, include_bias=False)
+    linear_regression = LinearRegression()
+    pipeline = make_pipeline(polynomial_features, linear_regression)
+    pipeline.fit(X, y)
+    return pipeline
 
 
 class SeatModel:
@@ -42,7 +63,7 @@ class SeatModel:
 
         # Fit a linear regression model for each party
         for party_name, party_data in self._previous_seat_share_df.items():
-            model = fit_linear_regression(self._previous_vote_share_df, party_data)
+            model = fit_polynomial_regression(self._previous_vote_share_df, party_data)
             self._party_models[party_name] = model
 
     def predict_seats(self, total_number_of_seats: int, vote_share_df: pd.DataFrame) -> pd.DataFrame:

@@ -4,6 +4,7 @@ This repository contains a model to predict the allocation of parliamentary seat
 
 ## Directory Structure
 
+```sh
 Westminster-Parliamentary-Seats-Model
 ├── data
 │ ├── british_vote_share_data.csv
@@ -23,6 +24,7 @@ Westminster-Parliamentary-Seats-Model
 ├── model_runner.py
 ├── output.csv
 └── README.md
+```
 
 
 ## Installation

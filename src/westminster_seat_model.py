@@ -88,14 +88,14 @@ if __name__ == "__main__":
 
     # Vote share data for prediction
     single_vote_share = pd.DataFrame({
-        "Conservative": [43.6],
-        "Labour": [32.1],
-        "Scottish National Party": [3.9],
-        "Liberal Democrats": [11.6],
-        "Plaid Cymru": [0.5],
-        "Green Party": [2.61],
-        "UKIP/Brexit Party/Reform UK": [2.01],
-        "Other": [3.68]
+        "Conservative": [22],
+        "Labour": [42],
+        "Scottish National Party": [3],
+        "Liberal Democrats": [9],
+        "Plaid Cymru": [1],
+        "Green Party": [6],
+        "UKIP/Brexit Party/Reform UK": [14],
+        "Other": [1]
     })
 
     # Predicted seats for each nation

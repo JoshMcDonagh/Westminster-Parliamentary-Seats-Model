@@ -23,15 +23,15 @@ Westminster-Parliamentary-Seats-Model
 ├── input.csv
 ├── model_runner.py
 ├── output.csv
+├── requirements.txt
 └── README.md
 ```
-
 
 ## Installation
 
 1. Clone the repository:
 ```sh
-git clone https://github.com/yourusername/Westminster-Parliamentary-Seats-Model.git
+git clone https://github.com/JoshMcDonagh/Westminster-Parliamentary-Seats-Model.git
 ```
 
 2. Navigate to the repository directory:
@@ -43,3 +43,4 @@ cd Westminster-Parliamentary-Seats-Model
 ```sh
 pip install -r requirements.txt
 ```
+

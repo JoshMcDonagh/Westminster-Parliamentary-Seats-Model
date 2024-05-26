@@ -1,6 +1,6 @@
 import pandas as pd
 
-from seat_model import SeatModel
+from src.seat_model import SeatModel
 
 
 class WestminsterSeatModel:

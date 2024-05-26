@@ -1,6 +1,6 @@
 import pandas as pd
 
-from westminster_seat_model import WestminsterSeatModel
+from src.westminster_seat_model import WestminsterSeatModel
 
 # Main block to execute the script
 if __name__ == "__main__":

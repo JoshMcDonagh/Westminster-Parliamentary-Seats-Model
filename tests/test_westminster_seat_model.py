@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from westminster_seat_model import WestminsterSeatModel
+from src.westminster_seat_model import WestminsterSeatModel
 
 
 class TestWestminsterSeatModel(unittest.TestCase):

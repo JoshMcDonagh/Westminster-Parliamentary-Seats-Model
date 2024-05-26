@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from seat_model import fit_polynomial_regression, SeatModel
+from src.seat_model import fit_polynomial_regression, SeatModel
 
 
 class TestFitPolynomialRegression(unittest.TestCase):

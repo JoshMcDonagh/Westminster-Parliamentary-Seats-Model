@@ -1,38 +1,9 @@
 import unittest
 
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
-from seat_model import fit_linear_regression, fit_polynomial_regression, SeatModel
-
-
-class TestFitLinearRegression(unittest.TestCase):
-    def setUp(self):
-        # Setup code to create a sample DataFrame and Series for testing
-        self.X = pd.DataFrame({
-            'feature1': [1, 2, 3, 4, 5],
-            'feature2': [5, 4, 3, 2, 1]
-        })
-        self.y = pd.Series([1, 2, 3, 4, 5])
-
-    def test_fit_linear_regression_returns_model(self):
-        # Test that the function returns a LinearRegression object
-        model = fit_linear_regression(self.X, self.y)
-        self.assertIsInstance(model, LinearRegression)
-
-    def test_model_is_fitted(self):
-        # Test that the model is fitted correctly
-        model = fit_linear_regression(self.X, self.y)
-        self.assertIsNotNone(model.coef_)
-        self.assertIsNotNone(model.intercept_)
-
-    def test_model_coefficients(self):
-        # Test that the model coefficients are correct for a simple case
-        model = fit_linear_regression(self.X, self.y)
-        expected_coefficients = [0.5, -0.5]
-        for actual, expected in zip(model.coef_, expected_coefficients):
-            self.assertAlmostEqual(actual, expected, places=5)
+from seat_model import fit_polynomial_regression, SeatModel
 
 
 class TestFitPolynomialRegression(unittest.TestCase):

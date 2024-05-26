@@ -4,22 +4,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import make_pipeline
 
 
-def fit_linear_regression(X, y):
-    """
-    Fit a linear regression model to the given data.
-
-    Parameters:
-    X (pd.DataFrame): The feature matrix (vote shares).
-    y (pd.Series): The target vector (seat shares).
-
-    Returns:
-    LinearRegression: The fitted linear regression model.
-    """
-    model = LinearRegression()
-    model.fit(X, y)
-    return model
-
-
 def fit_polynomial_regression(X, y, degree=3):
     """
     Fit a polynomial regression model to the given data.

@@ -19,9 +19,15 @@ class WestminsterSeatModel:
         """
         self._previous_vote_share_df = pd.read_csv("data/british_vote_share_data.csv")
         self._seat_models = {
-            "england": SeatModel(self._previous_vote_share_df, pd.read_csv("data/english_seat_share_data.csv")),
-            "scotland": SeatModel(self._previous_vote_share_df, pd.read_csv("data/scottish_seat_share_data.csv")),
-            "wales": SeatModel(self._previous_vote_share_df, pd.read_csv("data/welsh_seat_share_data.csv"))
+            "england": SeatModel("england",
+                                 self._previous_vote_share_df,
+                                 pd.read_csv("data/english_seat_share_data.csv")),
+            "scotland": SeatModel("scotland",
+                                  self._previous_vote_share_df,
+                                  pd.read_csv("data/scottish_seat_share_data.csv")),
+            "wales": SeatModel("wales",
+                               self._previous_vote_share_df,
+                               pd.read_csv("data/welsh_seat_share_data.csv"))
         }
 
         self._speakers_constituency_nation = "england"

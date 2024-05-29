@@ -46,21 +46,21 @@ class TestSeatModel(unittest.TestCase):
         cls.welsh_seat_share_df = pd.read_csv("data/welsh_seat_share_data.csv")
 
     def test_seat_model_england(self):
-        model = SeatModel(self.english_seat_share_df, self.vote_share_df)
+        model = SeatModel("england", self.english_seat_share_df, self.vote_share_df)
         vote_share_df = self.vote_share_df.drop(columns=["Election Year"])
         predicted_seats = model.predict_seats(total_number_of_seats=533,
                                               vote_share_df=vote_share_df)
         self.assertIsInstance(predicted_seats, pd.DataFrame)
 
     def test_seat_model_scotland(self):
-        model = SeatModel(self.scottish_seat_share_df, self.vote_share_df)
+        model = SeatModel("scotland", self.scottish_seat_share_df, self.vote_share_df)
         vote_share_df = self.vote_share_df.drop(columns=["Election Year"])
         predicted_seats = model.predict_seats(total_number_of_seats=59,
                                               vote_share_df=vote_share_df)
         self.assertIsInstance(predicted_seats, pd.DataFrame)
 
     def test_seat_model_wales(self):
-        model = SeatModel(self.welsh_seat_share_df, self.vote_share_df)
+        model = SeatModel("wales", self.welsh_seat_share_df, self.vote_share_df)
         vote_share_df = self.vote_share_df.drop(columns=["Election Year"])
         predicted_seats = model.predict_seats(total_number_of_seats=40,
                                               vote_share_df=vote_share_df)

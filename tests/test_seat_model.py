@@ -3,7 +3,8 @@ import unittest
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from src.seat_model import fit_polynomial_regression, SeatModel
+from src.seat_model import fit_polynomial_regression, SeatModel, adjust_row_to_int_preserving_sum, \
+    dataframe_floats_to_ints_preserving_sum
 
 
 class TestFitPolynomialRegression(unittest.TestCase):
@@ -35,8 +36,37 @@ class TestFitPolynomialRegression(unittest.TestCase):
             self.assertAlmostEqual(actual, expected, places=5)
 
 
-class TestSeatModel(unittest.TestCase):
+class TestAdjustRowToIntPreservingSum(unittest.TestCase):
+    def test_adjust_row_to_int_preserving_sum(self):
+        row = pd.Series([1.2, 2.5, 3.3, 4.0])
+        adjusted_row = adjust_row_to_int_preserving_sum(row)
+        self.assertEqual(sum(adjusted_row), round(sum(row)))
+        self.assertTrue(all(isinstance(x, int) for x in adjusted_row))
+        self.assertTrue(all(x >= 0 for x in adjusted_row))
 
+    def test_adjust_row_with_zero_values(self):
+        row = pd.Series([0.0, 0.0, 0.0, 0.0])
+        adjusted_row = adjust_row_to_int_preserving_sum(row)
+        self.assertEqual(sum(adjusted_row), 0)
+        self.assertTrue(all(x == 0 for x in adjusted_row))
+
+
+class TestDataFrameFloatsToIntsPreservingSum(unittest.TestCase):
+    def test_dataframe_floats_to_ints_preserving_sum(self):
+        df = pd.DataFrame({
+            'A': [1.2, 2.5, 3.3],
+            'B': [2.8, 1.7, 4.4],
+            'C': [3.3, 2.2, 1.5]
+        })
+        adjusted_df = dataframe_floats_to_ints_preserving_sum(df)
+        self.assertEqual(adjusted_df.shape, df.shape)
+        for i in range(len(df)):
+            self.assertEqual(sum(adjusted_df.iloc[i]), round(sum(df.iloc[i])))
+        self.assertTrue(adjusted_df.applymap(lambda x: isinstance(x, int)).all().all())
+        self.assertTrue((adjusted_df >= 0).all().all())
+
+
+class TestSeatModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Load the data once for all tests

@@ -17,9 +17,9 @@ if __name__ == "__main__":
 
     # Predict the number of seats for each party based on the input vote shares
     predicted_seats_df = westminster_model.predict_seats(number_of_english_seats,
-                                                      number_of_scottish_seats,
-                                                      number_of_welsh_seats,
-                                                      input_vote_share_df)
+                                                         number_of_scottish_seats,
+                                                         number_of_welsh_seats,
+                                                         input_vote_share_df)
 
     # Save the predicted seats to an output CSV file
     predicted_seats_df.to_csv("output.csv", index=False)

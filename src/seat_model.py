@@ -1,7 +1,10 @@
 import pandas as pd
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
-from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.multioutput import MultiOutputRegressor
+
 
 def fit_polynomial_regression(X, y, degree=3):
     """
@@ -20,6 +23,45 @@ def fit_polynomial_regression(X, y, degree=3):
     pipeline = make_pipeline(polynomial_features, linear_regression)
     pipeline.fit(X, y)
     return pipeline
+
+
+def fit_adjustment_model(X, y, n_estimators=500, max_depth=20, min_samples_leaf=5, max_features='sqrt', degree=5):
+    """
+    Fit a machine learning model to adjust seat shares based on interactions.
+
+    Parameters:
+    X (pd.DataFrame): The feature matrix (initial seat shares).
+    y (pd.DataFrame): The target matrix (historical adjusted seat shares).
+    n_estimators (int): Number of trees in the forest.
+    max_depth (int): The maximum depth of the trees.
+    min_samples_leaf (int): Minimum number of samples required to be at a leaf node.
+    max_features (str or int): The number of features to consider when looking for the best split.
+    degree (int): The degree of polynomial features to capture non-linear interactions.
+
+    Returns:
+    Pipeline: The fitted adjustment model.
+    """
+    # Polynomial features to add interaction terms
+    polynomial_features = PolynomialFeatures(degree=degree, include_bias=False)
+
+    # Random Forest with modified parameters
+    base_model = RandomForestRegressor(
+        n_estimators=n_estimators,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        max_features=max_features,
+        random_state=42
+    )
+    multi_output_model = MultiOutputRegressor(base_model)
+
+    # Pipeline with polynomial features and the multi-output random forest
+    adjustment_model = Pipeline([
+        ('polynomial_features', polynomial_features),
+        ('multi_output_model', multi_output_model)
+    ])
+
+    adjustment_model.fit(X, y)
+    return adjustment_model
 
 
 def adjust_row_to_int_preserving_sum(row):
@@ -82,12 +124,13 @@ def dataframe_floats_to_ints_preserving_sum(df):
 
 class SeatModel:
     """
-    A class to model seat allocation based on vote shares using polynomial regression.
+    A class to model seat allocation based on vote shares with interaction effects.
 
     Attributes:
     _previous_vote_share_df (pd.DataFrame): Previous vote share data.
     _previous_seat_share_df (pd.DataFrame): Previous seat share data.
     _party_models (dict): Dictionary to store the polynomial regression models for each party.
+    _adjustment_model (MultiOutputRegressor): Model to adjust initial seat shares based on interactions.
     """
 
     def __init__(self, nation_name: str, previous_vote_share_df: pd.DataFrame, previous_seat_share_df: pd.DataFrame) -> None:
@@ -95,9 +138,9 @@ class SeatModel:
         Initialize the SeatModel with historical data and fit models for each party.
 
         Parameters:
-        nation_name (str): String containing the name of the nation this seat model models.
-        previous_vote_share_df (pd.DataFrame): DataFrame containing previous vote share data.
-        previous_seat_share_df (pd.DataFrame): DataFrame containing previous seat share data.
+        nation_name (str): The nation this seat model models (e.g., "england").
+        previous_vote_share_df (pd.DataFrame): DataFrame with historical vote shares.
+        previous_seat_share_df (pd.DataFrame): DataFrame with historical seat shares.
         """
         self._nation_name = nation_name
         self._previous_vote_share_df = previous_vote_share_df.drop(columns=["Election Year"])
@@ -106,67 +149,37 @@ class SeatModel:
 
         # Fit a polynomial regression model for each party
         for party_name, party_data in self._previous_seat_share_df.items():
-            if nation_name == "england":
-                model = fit_polynomial_regression(self._previous_vote_share_df, party_data, 3)
-                self._include_snp = False
-                self._include_pc = False
-            elif nation_name == "scotland":
-                model = fit_polynomial_regression(self._previous_vote_share_df, party_data, 5)
-                self._include_snp = True
-                self._include_pc = False
-            elif nation_name == "wales":
-                model = fit_polynomial_regression(self._previous_vote_share_df, party_data, 3)
-                self._include_snp = False
-                self._include_pc = True
-            else:
-                raise Exception("Invalid nation name provided")
-
+            model = fit_polynomial_regression(self._previous_vote_share_df, party_data, degree=3)
             self._party_models[party_name] = model
+
+        # Fit the adjustment model on historical initial seat shares to final adjusted seat shares
+        initial_seat_shares = pd.DataFrame({party: model.predict(self._previous_vote_share_df) for party, model in self._party_models.items()})
+        self._adjustment_model = fit_adjustment_model(initial_seat_shares, self._previous_seat_share_df)
 
     def predict_seats(self, total_number_of_seats: int, vote_share_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Predict the number of seats for each party based on vote shares.
+        Predict the number of seats for each party based on vote shares with interactions.
 
         Parameters:
-        total_number_of_seats (int): Total number of seats to be allocated.
-        vote_share_df (pd.DataFrame): DataFrame containing vote share data for the prediction.
+        total_number_of_seats (int): Total number of seats to allocate.
+        vote_share_df (pd.DataFrame): DataFrame with vote share data for prediction.
 
         Returns:
-        pd.DataFrame: DataFrame containing the predicted number of seats for each party.
+        pd.DataFrame: DataFrame with predicted seats for each party.
         """
-        seat_share_predictions = {}
-        seat_share_total = 0.0
+        # Step 1: Generate initial seat share predictions for each party independently
+        initial_seat_shares = {party: model.predict(vote_share_df)[0] for party, model in self._party_models.items()}
+        initial_seat_shares_df = pd.DataFrame([initial_seat_shares])
 
-        # Predict the seat share for each party using the corresponding party models
-        for party_name, model in self._party_models.items():
-            if party_name != "Scottish National Party" and party_name != "Plaid Cymru":
-                predicted_seat_share = model.predict(vote_share_df)
-            elif party_name == "Scottish National Party" and self._include_snp:
-                predicted_seat_share = model.predict(vote_share_df)
-            elif party_name == "Plaid Cymru" and self._include_pc:
-                predicted_seat_share = model.predict(vote_share_df)
-            else:
-                predicted_seat_share = 0.0
+        # Step 2: Use the adjustment model to modify initial predictions based on interactions
+        adjusted_seat_shares = self._adjustment_model.predict(initial_seat_shares_df)
+        adjusted_seat_shares_df = pd.DataFrame(adjusted_seat_shares, columns=initial_seat_shares_df.columns)
 
-            if not isinstance(predicted_seat_share, int) and not isinstance(predicted_seat_share, float):
-                predicted_seat_share = predicted_seat_share[0]
+        # Normalize to ensure the total seat shares match the specified total number of seats
+        seat_share_total = adjusted_seat_shares_df.values.sum()
+        adjusted_seat_shares_df = adjusted_seat_shares_df.apply(lambda x: total_number_of_seats * (x / seat_share_total))
 
-            if predicted_seat_share < 0.0:
-                predicted_seat_share = 0.0
+        # Convert to integers while preserving the total seat count
+        adjusted_seat_shares_df = dataframe_floats_to_ints_preserving_sum(adjusted_seat_shares_df)
 
-            seat_share_total += predicted_seat_share
-            seat_share_predictions[party_name] = predicted_seat_share
-
-        seat_predictions = {}
-
-        # Calculate the number of seats for each party based on the associated seat share
-        for party_name, party_seat_share_prediction in seat_share_predictions.items():
-            value = total_number_of_seats * (party_seat_share_prediction / seat_share_total)
-            seat_predictions[party_name] = [value]
-
-        pd.set_option('display.max_columns', None)
-
-        # Convert seat_predictions to DataFrame
-        df = pd.DataFrame.from_dict(seat_predictions).clip(lower=0)
-        df = dataframe_floats_to_ints_preserving_sum(df)
-        return df
+        return adjusted_seat_shares_df
